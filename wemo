@@ -302,12 +302,22 @@ done
 #123456789o123456789o123456789o123456789o123456789o123456789o123456789o123456789
 # Identify TCP port to use                                                     #
 #123456789o123456789o123456789o123456789o123456789o123456789o123456789o123456789
-PORTTEST="$( curl --silent ${DEVICE_HOST}:49153 | grep "404" )"
-if testEmpty "${PORTTEST}"
+declare -a ports=(49152 49153 49154 49155)
+PORT=0
+for p in "${ports[@]}"
+do
+    PORTTEST="$( curl --max-time 10 --silent ${DEVICE_HOST}:$p | grep "404" )"
+    if ! testEmpty "${PORTTEST}"
+    then
+       PORT=$p
+       break
+    fi
+done
+
+if [ "$PORT" -le "0" ]
 then
-    PORT=49152
-else
-    PORT=49153
+    echoError "Unable to detect port for ${DEVICE_HOST}"
+    finish 12
 fi
 
 #123456789o123456789o123456789o123456789o123456789o123456789o123456789o123456789
