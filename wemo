@@ -16,12 +16,11 @@
 
 COPYRIGHT="2015 James Borkowski @github:agilemation" # © Notice, displayed with --help
 ACKNOWLEDGEMENT="Third-party trademarks mentioned are the property of their respective owners."
-USAGE_TEXT="-h [ IP/HOSTNAME ] -a [ ACTION ] -p [ PORT ] [[ -ver ] | [ -? ]] | [ -s ] | [ -v ] | [ -V ] | [ -t ] | [ -T ]] [[ -tt ]] 
+USAGE_TEXT="-h [ IP/HOSTNAME ] -a [ ACTION ] [[ -ver ] | [ -? ]] | [ -s ] | [ -v ] | [ -V ] | [ -t ] | [ -T ]] [[ -tt ]] 
 
 Arguments:
     [ -h | --host ]    IP_ADDRESS | HOSTNAME
     [ -a | --action ]  ON | OFF | GETSTATE | GETSIGNALSTRENGTH | GETNAME | SETNAME NAME
-    [ -p | --port ]    PORT
 
 Optional Arguments: 
     [ -s | --silent ]        
@@ -234,11 +233,6 @@ do
             DEVICE_HOST="${1}"
             shift
             ;;
-        -p | --port )
-            shift
-            PORT="${1}"
-            shift
-            ;;
         -a | --action )
             shift
             case ${1} in
@@ -304,6 +298,27 @@ do
             ;;
     esac
 done
+
+#123456789o123456789o123456789o123456789o123456789o123456789o123456789o123456789
+# Identify TCP port to use                                                     #
+#123456789o123456789o123456789o123456789o123456789o123456789o123456789o123456789
+declare -a ports=(49152 49153 49154 49155)
+PORT=0
+for p in "${ports[@]}"
+do
+    PORTTEST="$( curl --max-time 10 --silent ${DEVICE_HOST}:$p | grep "404" )"
+    if ! testEmpty "${PORTTEST}"
+    then
+       PORT=$p
+       break
+    fi
+done
+
+if [ "$PORT" -le "0" ]
+then
+    echoError "Unable to detect port for ${DEVICE_HOST}"
+    finish 12
+fi
 
 #123456789o123456789o123456789o123456789o123456789o123456789o123456789o123456789
 # Final test that we have everything we need to run, then do it...             #
