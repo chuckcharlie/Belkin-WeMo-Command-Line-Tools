@@ -306,7 +306,7 @@ declare -a ports=(49152 49153 49154 49155)
 PORT=0
 for p in "${ports[@]}"
 do
-    PORTTEST="$( curl --max-time 10 --silent ${DEVICE_HOST}:$p | grep "404" )"
+    PORTTEST="$( curl --max-time 3 --silent ${DEVICE_HOST}:$p | grep "404" )"
     if ! testEmpty "${PORTTEST}"
     then
        PORT=$p
